@@ -1,2 +1,6 @@
-.terraform
-.terraform.lock.hcl
+.terraform*
+terraform.tfvars
+EC2Tutorial.pem
+terraform.tfstate
+terraform.tfstate.backup
+lambda_function_payload.zip

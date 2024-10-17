@@ -28,6 +28,11 @@ variable "scheduler" {
   type        = list(string)
 }
 
+variable "vpc_id" {
+  description = "VPC ID for the subnet"
+  type        = string
+}
+
 variable "subnet_id" {
   description = "Subnet ID for the instance"
   type        = string
@@ -40,5 +45,10 @@ variable "private_ip" {
 
 variable "existing_security_group_id" {
   description = "Existing security group ID"
+  type        = string
+}
+
+variable "public_key_filename" {
+  description = "Path to the public key file for SSH key pair"
   type        = string
 }
