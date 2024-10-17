@@ -6,7 +6,11 @@ resource "aws_lambda_function" "start_stop_ec2" {
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("lambda_function_payload.zip")
+
+  # Ensure that the zip file is created before Lambda function is created
+  depends_on = [null_resource.lambda_zip]
 }
+
 # Lambda Function Python Code Zip
 resource "null_resource" "lambda_zip" {
   provisioner "local-exec" {
