@@ -31,6 +31,7 @@ resource "aws_cloudwatch_event_rule" "start_ec2_rule" {
   description         = "Triggers Lambda to start EC2 instances at 8:00 AM UTC"
   schedule_expression = "cron(0 8 * * ? *)" # 8:00 AM UTC
 }
+
 # Lambda target for start event
 resource "aws_cloudwatch_event_target" "start_ec2_target" {
   rule      = aws_cloudwatch_event_rule.start_ec2_rule.name
