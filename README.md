@@ -1,0 +1,6 @@
+- Create n number of ec2 instances with custom tag `scheduler` as value `true` or `false`.
+- Create lambda function which will do the following tasks:
+  - Find the list of running ec2 instances with the scheduler tag true.
+  - Start/stop those instances based on the schedule.
+- Create necessary IAM role for lambda function to run it properly.
+- Create necessary CloudWatch resources for the lambda function to trigger on schedule.
