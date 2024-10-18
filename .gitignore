@@ -4,3 +4,4 @@ EC2Tutorial.pem
 terraform.tfstate
 terraform.tfstate.backup
 lambda_function_payload.zip
+EC2 Tutorial.pem
