@@ -1,0 +1,29 @@
+## For the main.tf
+```
+terraform plan -target=provider.aws \
+-target=data.aws_subnets.all \
+-target=data.aws_subnet.default \
+-target=aws_key_pair.key_pair \
+-target=aws_network_interface.example \
+-target=aws_instance.ec2_instance
+```
+### For destory main.tf:
+```
+terraform destroy -target=aws_instance.ec2_instance \
+-target=aws_network_interface.example \
+-target=aws_key_pair.key_pair
+```
+
+## Lambda Function Creation (delete if there's existing function)
+`terraform plan -target=aws_lambda_function.start_stop_ec2 -target=null_resource.lambda_zip`
+
+## CloudWatch Resouces Creation (delete if there's existing event)
+terraform plan -target=aws_cloudwatch_event_rule.stop_ec2_rule \
+-target=aws_cloudwatch_event_target.stop_ec2_target \
+-target=aws_lambda_permission.allow_stop_cloudwatch \
+-target=aws_cloudwatch_event_rule.start_ec2_rule \
+-target=aws_cloudwatch_event_target.start_ec2_target \
+-target=aws_lambda_permission.allow_start_cloudwatch
+```
+## IAM Role for Lambda (delete if there's existing role named 'lambda-exec-role')
+`terraform plan -target=aws_iam_role.lambda_exec -target=aws_iam_role_policy.lambda_policy`
