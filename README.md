@@ -16,6 +16,8 @@ This project demonstrates how to:
 git clone https://github.com/your-repo/aws-ec2-scheduler.git
 cd aws-ec2-scheduler
 ```
+For cloudFormation version, please go to this page: https://github.com/seeamkhan/aws-ec2-scheduler/tree/main/cloudFormation-version.
+For terraform, please continue to Step 2.
 
 ### Step 2: Update Variables
 Rename the terraform.tfvars.example to terraform.tfvars:
