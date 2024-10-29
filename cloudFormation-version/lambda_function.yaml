@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create a Lambda function for managing EC2 instances based on tags
+
+Resources:
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: lambda-exec-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:StartInstances"
+                  - "ec2:StopInstances"
+                Resource: "*"
+
+  StartStopEC2LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: start-stop-ec2-tagged
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        S3Bucket: <S3_BUCKET_NAME> # Update with the S3 bucket containing the Lambda code
+        S3Key: <S3_KEY>             # Update with the key (path) to the Lambda code
+      Timeout: 60
+      Environment:
+        Variables:
+          TAG_NAME: "scheduler"
+          TAG_VALUE: "true"
+          
+Outputs:
+  LambdaFunctionArn:
+    Description: ARN of the created Lambda function
+    Value: !GetAtt StartStopEC2LambdaFunction.Arn

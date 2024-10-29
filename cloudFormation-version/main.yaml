@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Nested CloudFormation Stack for Lambda Function, IAM Roles, and CloudWatch Events to 
+  auto-stop and auto-start EC2 instances based on schedule.
+
+Parameters:
+  VpcId:
+    Type: String
+    Description: ID of the VPC where EC2 instances are located.
+  SubnetId:
+    Type: String
+    Description: Subnet ID for EC2 and Lambda.
+  InstanceType:
+    Type: String
+    Description: EC2 instance type.
+  AmiId:
+    Type: String
+    Description: AMI ID for the EC2 instances.
+  KeyName:
+    Type: String
+    Description: EC2 key pair name for SSH access.
+  S3BucketLambdaCode:
+    Type: String
+    Description: S3 bucket containing Lambda function zip file.
+  LambdaFunctionZipFile:
+    Type: String
+    Description: Name of the Lambda function zip file in the S3 bucket.
+
+Resources:
+  IAMRolesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: https://s3.amazonaws.com/your-bucket-name/iam_roles.yaml
+      Parameters: 
+        VpcId: !Ref VpcId
+        SubnetId: !Ref SubnetId
+
+  LambdaFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: https://s3.amazonaws.com/your-bucket-name/lambda_function.yaml
+      Parameters:
+        S3BucketLambdaCode: !Ref S3BucketLambdaCode
+        LambdaFunctionZipFile: !Ref LambdaFunctionZipFile
+        RoleArn: !GetAtt IAMRolesStack.Outputs.LambdaExecutionRoleArn
+
+  CloudWatchEventsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: https://s3.amazonaws.com/your-bucket-name/cloudwatch_events.yaml
+      Parameters:
+        LambdaFunctionArn: !GetAtt LambdaFunctionStack.Outputs.LambdaArn
+
+  # Optional EC2 Instance Stack (for testing purposes)
+  EC2InstancesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/your-bucket-name/optional_ec2_instances.yaml
+      Parameters:
+        VpcId: !Ref VpcId
+        SubnetId: !Ref SubnetId
+        InstanceType: !Ref InstanceType
+        AmiId: !Ref AmiId
+        KeyName: !Ref KeyName
+
+Outputs:
+  LambdaFunctionArn:
+    Description: ARN of the created Lambda function
+    Value: !GetAtt LambdaFunctionStack.Outputs.LambdaArn
+
+  StopEventRuleName:
+    Description: Name of the CloudWatch Event Rule for stopping EC2 instances
+    Value: !GetAtt CloudWatchEventsStack.Outputs.StopRuleName
+
+  StartEventRuleName:
+    Description: Name of the CloudWatch Event Rule for starting EC2 instances
+    Value: !GetAtt CloudWatchEventsStack.Outputs.StartRuleName

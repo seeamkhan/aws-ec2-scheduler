@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for creating EC2 instances with scheduling tags
+
+Resources:
+  EC2InstanceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Security group for EC2 instances"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: !Ref AmiId
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+          GroupSet:
+            - !Ref EC2InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: "Scheduled EC2 Instance"
+        - Key: scheduler
+          Value: "true"
+
+Parameters:
+  VpcId:
+    Type: String
+    Description: "The VPC ID for the EC2 instances"
+  
+  SubnetId:
+    Type: String
+    Description: "The Subnet ID for the EC2 instances"
+
+  InstanceType:
+    Type: String
+    Default: "t2.micro"
+    Description: "The EC2 instance type"
+  
+  KeyName:
+    Type: String
+    Description: "The name of the existing key pair to enable SSH access to the EC2 instances"
+  
+  AmiId:
+    Type: String
+    Description: "The AMI ID to use for the EC2 instance"
+
+Outputs:
+  EC2InstanceId:
+    Description: "ID of the created EC2 instance"
+    Value: !Ref EC2Instance

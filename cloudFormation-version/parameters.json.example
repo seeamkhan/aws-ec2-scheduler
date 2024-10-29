@@ -1,0 +1,46 @@
+[
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": ""  // Replace with your actual key pair name
+  },
+  {
+    "ParameterKey": "SchedulerTag",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "AMIId",
+    "ParameterValue": "" // Replace with the correct AMI ID for your region
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "InstanceCount",
+    "ParameterValue": "3"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "" // Replace with your VPC ID
+  },
+  {
+    "ParameterKey": "SubnetId",
+    "ParameterValue": "" // Replace with your Subnet ID
+  },
+  {
+    "ParameterKey": "SecurityGroupId",
+    "ParameterValue": "" // Replace with your Security Group ID
+  },
+  {
+    "ParameterKey": "PublicKeyFileName",
+    "ParameterValue": "" // Path to your public key file
+  },
+  {
+    "ParameterKey": "LambdaS3Bucket",
+    "ParameterValue": "" // Replace with your S3 bucket for Lambda code upload
+  },
+  {
+    "ParameterKey": "LambdaS3Key",
+    "ParameterValue": "" // Replace with your Lambda zip file name
+  }
+]
