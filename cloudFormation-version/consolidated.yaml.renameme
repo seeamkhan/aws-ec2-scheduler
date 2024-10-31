@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  CloudFormation template for scheduling Lambda to start/stop EC2 instances based on tag values.
+
+Parameters:
+  SchedulerTag:
+    Type: String
+    Description: Tag value for EC2 instances to be managed by this Lambda.
+    Default: "true"
+
+  LambdaS3Bucket:
+    Type: String
+    Description: S3 bucket containing Lambda function zip file.
+
+  LambdaS3Key:
+    Type: String
+    Description: S3 key for the Lambda function zip file.
+
+Resources:
+  # IAM Role for Lambda Execution
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: lambda-exec-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:StartInstances"
+                  - "ec2:StopInstances"
+                Resource: "*"
+
+  # Lambda Function for Starting/Stopping EC2 Instances
+  StartStopEC2LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: start-stop-ec2-tagged
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: !Ref LambdaS3Key
+      Timeout: 60
+      Environment:
+        Variables:
+          TAG_NAME: "scheduler"
+          TAG_VALUE: !Ref SchedulerTag
+
+  # CloudWatch Events Rule to Stop EC2 Instances
+  StopEC2Rule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "stop-ec2-instances"
+      Description: "Triggers Lambda to stop EC2 instances at 6:00 PM UTC"
+      ScheduleExpression: "cron(0 18 * * ? *)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt StartStopEC2LambdaFunction.Arn
+          Id: "stop_ec2_lambda"
+          Input: '{ "action": "stop" }'
+
+  # CloudWatch Events Rule to Start EC2 Instances
+  StartEC2Rule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "start-ec2-instances"
+      Description: "Triggers Lambda to start EC2 instances at 8:00 AM UTC"
+      ScheduleExpression: "cron(0 8 * * ? *)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt StartStopEC2LambdaFunction.Arn
+          Id: "start_ec2_lambda"
+          Input: '{ "action": "start" }'
+
+  # Permissions for CloudWatch to Invoke Lambda for Stopping Instances
+  LambdaPermissionForStopEC2:
+    Type: "AWS::Lambda::Permission"
+    Properties: 
+      FunctionName: !Ref StartStopEC2LambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt StopEC2Rule.Arn
+
+  # Permissions for CloudWatch to Invoke Lambda for Starting Instances
+  LambdaPermissionForStartEC2:
+    Type: "AWS::Lambda::Permission"
+    Properties: 
+      FunctionName: !Ref StartStopEC2LambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt StartEC2Rule.Arn
+
+Outputs:
+  LambdaFunctionArn:
+    Description: ARN of the created Lambda function
+    Value: !GetAtt StartStopEC2LambdaFunction.Arn
+
+  StopEventRuleName:
+    Description: Name of the CloudWatch Event Rule for stopping EC2 instances
+    Value: !Ref StopEC2Rule
+
+  StartEventRuleName:
+    Description: Name of the CloudWatch Event Rule for starting EC2 instances
+    Value: !Ref StartEC2Rule
